@@ -2,7 +2,7 @@
 	import { prompts } from '$lib/prompts.js';
 
 	import { onMount } from 'svelte';
-	import { debounce } from '$lib/utils.js';
+	import { debounce, shuffleArray } from '$lib/utils.js';
 
 	let onboarding = true;
 	let revealAnswers = false;
@@ -30,7 +30,9 @@
 			while (index === null || game.promptIndexes.includes(index)) {
 				index = Math.floor(Math.random() * prompts.length);
 			}
+
 			game.prompts.push(prompts[index]);
+			shuffleArray(game.prompts[game.prompts.length - 1].choices);
 			game.promptIndexes.push(index);
 		}
 
@@ -84,7 +86,7 @@
 					on:click={() => {
 						selectAnswer(choice);
 					}}
-					class="rounded-lg px-6 py-3 text-lg font-semibold text-white shadow-md ring-1 backdrop-blur-md transition duration-300 hover:bg-white/20 hover:shadow-xl {revealAnswers
+					class="rounded-lg px-6 py-3 text-lg font-semibold text-white shadow-md ring-1 backdrop-blur-md transition duration-300 hover:shadow-xl {revealAnswers
 						? choice === game.prompts[game.round].answer
 							? 'bg-green-500/20 ring-green-400/20 hover:bg-green-600/40'
 							: 'bg-red-500/20 ring-red-400/20 hover:bg-red-600/40'
@@ -102,15 +104,7 @@
 				<p class="text-lg text-white/90">
 					{game.prompts[game.round].notes}
 				</p>
-				{#if game.round === game.prompts.length - 1}
-					<button
-						on:click={() => {
-							onboarding = true;
-						}}
-						class="mt-4 w-fit rounded-lg bg-white/10 px-6 py-3 text-lg font-semibold text-white shadow-md ring-1 ring-white/20 backdrop-blur-md transition duration-300 hover:bg-white/20 hover:shadow-xl hover:ring-white/30"
-						>Play Again</button
-					>
-				{:else}
+				{#if game.round !== game.prompts.length - 1}
 					<button
 						on:click={() => {
 							game.round++;
@@ -121,6 +115,23 @@
 					>
 				{/if}
 			</div>
+
+			{#if game.round === game.prompts.length - 1}
+				<div
+					class="mt-6 flex flex-col items-center justify-center rounded-xl border border-white/20 bg-white/10 p-6 shadow-lg backdrop-blur-xl"
+				>
+					<h2 class="text-2xl font-bold">
+						Score: {game.answers.filter((a) => a).length}/{game.answers.length}
+					</h2>
+					<button
+						on:click={() => {
+							onboarding = true;
+						}}
+						class="mt-4 w-fit rounded-lg bg-white/10 px-6 py-3 text-lg font-semibold text-white shadow-md ring-1 ring-white/20 backdrop-blur-md transition duration-300 hover:bg-white/20 hover:shadow-xl hover:ring-white/30"
+						>Play Again</button
+					>
+				</div>
+			{/if}
 		{/if}
 	{/if}
 </div>
